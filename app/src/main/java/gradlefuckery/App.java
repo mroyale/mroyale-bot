@@ -18,16 +18,17 @@ public class App {
         String token = getToken();
         DiscordApi api = new DiscordApiBuilder().setToken(token).login().join();
         api.updateActivity("Mario Royale | No DMs yet!");
-        String VERSION = "Release 1.0";
+        String VERSION = "Release 1.1";
 
         // Message listener event
         api.addMessageCreateListener(event -> {
-            String message = event.getMessageContent().toLowerCase(Locale.ROOT); // this is a mess
+            String message = event.getMessageContent();
             String[] arguments = message.split(" ");
+            String msgContent = arguments[0].toLowerCase(Locale.ROOT);
             String author = event.getMessageAuthor().getIdAsString();
 
             if (author != "669944860874113028") {
-                switch (arguments[0]) {
+                switch (msgContent) {
                     case ".link" -> {
                         EmbedBuilder embed = new EmbedBuilder()
                                 .setTitle("Here's the Mario Royale link!")
@@ -42,11 +43,9 @@ public class App {
                     case ".info" -> {
                         EmbedBuilder infoEmbed = new EmbedBuilder()
                                 .setTitle("Here's some information about me:")
-                                .addField("Author:", "terminalarch#8246")
-                                .addField("Version:", VERSION)
-                                .addField("Invite:", "[Royale Bot](" + api.createBotInvite() + ")")
-                                .addField("Discord:", "[Royale Discord](https://discord.gg/kV72ezsQwt)")
-                                .addField("GitHub:", "[Royale GitHub](https://github.com/mroyale)")
+                                .addInlineField("Author:", "terminalarch#8246")
+                                .addInlineField("Version:", VERSION)
+                                .addInlineField("Invite:", "[Royale Bot](" + api.createBotInvite() + ")")
                                 .setColor(Color.RED)
                                 .setFooter("Mario Royale Bot");
 
@@ -122,7 +121,7 @@ public class App {
                     case ".hg" -> {
                         try {
                             String[] formatList = message.split(" ", 2);
-                            String[] characters = formatList[1].split(" ");
+                            String[] characters = formatList[1].trim().split(",");
 
                             for (String elem : characters) {
                                 if (elem.length() < 3) {
@@ -141,8 +140,8 @@ public class App {
                                     List<String> survivors = new ArrayList<String>();
                                     List<String> finalSurvivors = new ArrayList<String>();
 
-                                    String[] actions1 = {"dies after stumbling over a branch", "didn't clear his fucking cache. He suffered a laggy despawn from life", "hears someone shout \"So long gay Bowser!\" and then gets squished by a giant tortoise", "gets slowly digested over 1000 years, by a Piranha Plant", "commits suicide", "drowns", "finds a power star and dies due to an overdose of it","gets their head cut off", "finds some rocks to make a tool", "creates a fire", "finds firecrackers", "makes a bow out of a stick and a rope they found", "makes a makeshift knife out of the bones of their enemy", "does some parkour", "watches the sun rise", "laughs at gay luigi", "builds a shelter", "finds berries", "befriends a wild pig", "befriends a wild Koopa"};
-                                    String[] actions2 = {"gets killed by a mysterious stranger", "didn't clear his fucking cache. He suffered a laggy despawn from life", "steps into a lethal trap", "gets burned with a fire flower", "got to the bridge too late and fell into the lava with bowser", "finds the magic mushroom kingdom and stays", "gets stomped on by a Mario immitator", "hides in a cave they found", "gets saved from a mysterious stranger by gay Luigi", "hides in a tree until everything's over", "wanders around without finding anyone", "found some pipeweed and has a good time"};
+                                    String[] actions1 = {"was caught venting and subsequently ejected", "was grabbed by luigi at 0%", "dies after stumbling over a branch", "didn't clear his fucking cache. He suffered a laggy despawn from life", "hears someone shout \"So long gay Bowser!\" and then gets squished by a giant tortoise", "gets slowly digested over 1000 years, by a Piranha Plant", "commits suicide", "drowns", "finds a power star and dies due to an overdose of it","gets their head cut off", "finds some rocks to make a tool", "creates a fire", "finds firecrackers", "makes a bow out of a stick and a rope they found", "makes a makeshift knife out of the bones of their enemy", "does some parkour", "watches the sun rise", "laughs at gay luigi", "builds a shelter", "finds berries", "befriends a wild pig", "befriends a wild Koopa"};
+                                    String[] actions2 = {"was caught venting and subsequently ejected", "fell off a cliff and broke every bone in their body", "gets killed by a mysterious stranger", "didn't clear his fucking cache. He suffered a laggy despawn from life", "steps into a lethal trap", "gets burned with a fire flower", "got to the bridge too late and fell into the lava with bowser", "finds the magic mushroom kingdom and stays", "gets stomped on by a Mario immitator", "hides in a cave they found", "gets saved from a mysterious stranger by gay Luigi", "hides in a tree until everything's over", "wanders around without finding anyone", "found some pipeweed and has a good time"};
                                     int maxActions1 = actions1.length - 1;
                                     int maxActions2 = actions2.length - 1;
 
@@ -163,7 +162,7 @@ public class App {
                                         if (isBlacklisted(elem)) { event.getChannel().sendMessage("No."); return; } // it should detect this right off the bat
 
                                         firstMSG.append("> " + elem + " " + actions1[choice] + "\n");
-                                        if (choice > 7) { survivors.add(elem); }
+                                        if (choice > 9) { survivors.add(elem); }
                                     }
 
                                     // PHASE TWO
@@ -172,19 +171,19 @@ public class App {
                                         for (String elem: survivors) {
                                             int choice = randint(0, maxActions2);
                                             secondMSG.append("> " + elem + " " + actions2[choice] + "\n");
-                                            if (choice > 6) {
+                                            if (choice > 8) {
                                                 finalSurvivors.add(elem);
                                             }
                                         }
                                     } else if (survivors.size() == 1) {
                                         secondMSG.delete(0, secondMSG.length());
                                         secondMSG.append("**" + survivors.get(0) + " looks around and sees that they're the only left, making them the winner.**");
-                                        thirdMSG.append("");
+                                        thirdMSG.setLength(0);
                                         skip = true;
                                     } else {
                                         secondMSG.delete(0, secondMSG.length());
                                         secondMSG.append("**The wind howls through the empty mushroom kingdom, as everyone is dead**");
-                                        thirdMSG.append("");
+                                        thirdMSG.setLength(0);
                                         skip = true;
                                     }
 
@@ -329,7 +328,7 @@ public class App {
     /* Get token from file */
     public static String getToken() {
         try {
-            File token = new File("token.txt"); // Token should be placed at the root (/) of the project
+            File token = new File("token.txt"); // Token should be placed at the root (/app) of the project
             Scanner scan = new Scanner(token);
 
             while (scan.hasNextLine()) {
